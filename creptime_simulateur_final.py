@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Crêp'Time - Simulateur Complet", layout="wide")
 st.title("🥞 Simulateur de Rentabilité - Crêp'Time (Meknès)")
 
-# === Produits : prix, coût, consommation ===
+# === Produits : prix, coût ===
 st.sidebar.header("🧾 Paramètres Produits & Marges")
 
 # Crêpes
@@ -29,13 +29,20 @@ st.sidebar.markdown("### 🍨 Glace")
 prix_glace = st.sidebar.number_input("Prix glace (MAD)", value=15)
 cout_glace = st.sidebar.number_input("Coût glace (MP)", value=5)
 
-# Calcul marge nette/client
+# === Marge par produit (affichage info)
 marge_crepe = prix_crepe - cout_crepe
 marge_jus = prix_jus - cout_jus
 marge_cafe = prix_cafe - cout_cafe
 marge_glace = prix_glace - cout_glace
-panier_moyen = marge_crepe + marge_jus + marge_cafe + marge_glace
 
+st.sidebar.markdown("---")
+st.sidebar.markdown(f"🔹 Marge crêpe : **{marge_crepe} MAD**")
+st.sidebar.markdown(f"🔹 Marge jus : **{marge_jus} MAD**")
+st.sidebar.markdown(f"🔹 Marge café : **{marge_cafe} MAD**")
+st.sidebar.markdown(f"🔹 Marge glace : **{marge_glace} MAD**")
+
+# === Panier moyen manuel ===
+panier_moyen = st.sidebar.number_input("🧺 Panier moyen net par client (en MAD)", value=35.0)
 st.markdown(f"🧺 **Panier moyen net par client : {panier_moyen:.2f} MAD**")
 
 # === Paramètres de gestion ===
