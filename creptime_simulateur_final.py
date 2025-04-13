@@ -6,44 +6,47 @@ import matplotlib.pyplot as plt
 st.set_page_config(page_title="Crêp'Time - Simulateur Complet", layout="wide")
 st.title("🥞 Simulateur de Rentabilité - Crêp'Time (Meknès)")
 
-# === Produits : prix, coût ===
-st.sidebar.header("🧾 Paramètres Produits & Marges")
+# === Produits : prix, coût, consommation ===
+st.sidebar.header("🧾 Paramètres Produits, Marges & Consommation")
 
 # Crêpes
 st.sidebar.markdown("### 🧁 Crêpes")
 prix_crepe = st.sidebar.number_input("Prix crêpe (MAD)", value=30)
-cout_crepe = st.sidebar.number_input("Coût crêpe (MP)", value=10)
+cout_crepe = st.sidebar.number_input("Coût MP crêpe (MAD)", value=10)
+conso_crepe = st.sidebar.number_input("Consommation moyenne de crêpes / client", value=1.0)
 
 # Jus / Smoothies
 st.sidebar.markdown("### 🍹 Jus / Smoothies")
 prix_jus = st.sidebar.number_input("Prix jus (MAD)", value=20)
-cout_jus = st.sidebar.number_input("Coût jus (MP)", value=7)
+cout_jus = st.sidebar.number_input("Coût MP jus (MAD)", value=7)
+conso_jus = st.sidebar.number_input("Consommation moyenne de jus / client", value=0.5)
 
 # Café
 st.sidebar.markdown("### ☕ Café")
 prix_cafe = st.sidebar.number_input("Prix café (MAD)", value=12)
-cout_cafe = st.sidebar.number_input("Coût café (MP)", value=3)
+cout_cafe = st.sidebar.number_input("Coût MP café (MAD)", value=3)
+conso_cafe = st.sidebar.number_input("Consommation moyenne de café / client", value=0.5)
 
 # Glace
 st.sidebar.markdown("### 🍨 Glace")
 prix_glace = st.sidebar.number_input("Prix glace (MAD)", value=15)
-cout_glace = st.sidebar.number_input("Coût glace (MP)", value=5)
+cout_glace = st.sidebar.number_input("Coût MP glace (MAD)", value=5)
+conso_glace = st.sidebar.number_input("Consommation moyenne de glace / client", value=0.3)
 
-# === Marge par produit (affichage info)
+# === Marge nette réelle par client ===
 marge_crepe = prix_crepe - cout_crepe
 marge_jus = prix_jus - cout_jus
 marge_cafe = prix_cafe - cout_cafe
 marge_glace = prix_glace - cout_glace
 
-st.sidebar.markdown("---")
-st.sidebar.markdown(f"🔹 Marge crêpe : **{marge_crepe} MAD**")
-st.sidebar.markdown(f"🔹 Marge jus : **{marge_jus} MAD**")
-st.sidebar.markdown(f"🔹 Marge café : **{marge_cafe} MAD**")
-st.sidebar.markdown(f"🔹 Marge glace : **{marge_glace} MAD**")
+panier_moyen = (
+    marge_crepe * conso_crepe +
+    marge_jus * conso_jus +
+    marge_cafe * conso_cafe +
+    marge_glace * conso_glace
+)
 
-# === Panier moyen manuel ===
-panier_moyen = st.sidebar.number_input("🧺 Panier moyen net par client (en MAD)", value=35.0)
-st.markdown(f"🧺 **Panier moyen net par client : {panier_moyen:.2f} MAD**")
+st.markdown(f"🧺 **Panier moyen net réel par client : {panier_moyen:.2f} MAD**")
 
 # === Paramètres de gestion ===
 st.sidebar.header("⚙️ Paramètres de gestion")
@@ -54,7 +57,7 @@ jours_mois = st.sidebar.slider("Jours d'activité par mois", 20, 31, 30)
 associes = st.sidebar.number_input("Nombre d'associés", value=6)
 impot_taux = st.sidebar.slider("Taux impôt (%)", 0, 50, 20) / 100
 
-# === Charges fixes détaillées ===
+# === Charges fixes ===
 st.sidebar.header("🏗️ Charges Fixes (Investissement)")
 local = st.sidebar.number_input("Droit au local", value=100000)
 travaux = st.sidebar.number_input("Travaux / déco", value=25000)
@@ -67,7 +70,7 @@ divers_fixes = st.sidebar.number_input("Divers (fixe)", value=10000)
 charges_fixes_totales = sum([local, travaux, materiel, mobilier, ambiance, stock, divers_fixes])
 part_fixe_associe = charges_fixes_totales / associes
 
-# === Charges mensuelles détaillées ===
+# === Charges mensuelles ===
 st.sidebar.header("📆 Charges Mensuelles")
 loyer = st.sidebar.number_input("Loyer", value=4000)
 salaire_employes = st.sidebar.number_input("Salaires employés (2)", value=4000)
@@ -88,18 +91,24 @@ clients_range = list(range(clients_min, clients_max + 1, pas))
 data = []
 
 for clients in clients_range:
-    revenu_brut = clients * panier_moyen * jours_mois
+    marge_par_client = (
+        marge_crepe * conso_crepe +
+        marge_jus * conso_jus +
+        marge_cafe * conso_cafe +
+        marge_glace * conso_glace
+    )
+    revenu_brut = marge_par_client * clients * jours_mois
     benefice_avant_impot = revenu_brut - charges_mensuelles
     impot = max(0, benefice_avant_impot * impot_taux)
     profit_net = benefice_avant_impot - impot
     part_associe = profit_net / associes
     data.append([
-        clients, panier_moyen, revenu_brut, benefice_avant_impot,
+        clients, marge_par_client, revenu_brut, benefice_avant_impot,
         impot, profit_net, part_associe
     ])
 
 df = pd.DataFrame(data, columns=[
-    "Clients/Jour", "Panier Moyen Net", "Revenu Brut",
+    "Clients/Jour", "Marge nette/Client", "Revenu Brut",
     "Bénéfice Avant Impôt", "Impôt", "Profit Net", "Part par Associé"
 ])
 
