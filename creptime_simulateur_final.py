@@ -36,6 +36,8 @@ marge_cafe = prix_cafe - cout_cafe
 marge_glace = prix_glace - cout_glace
 panier_moyen = marge_crepe + marge_jus + marge_cafe + marge_glace
 
+st.markdown(f"🧺 **Panier moyen net par client : {panier_moyen:.2f} MAD**")
+
 # === Paramètres de gestion ===
 st.sidebar.header("⚙️ Paramètres de gestion")
 clients_min = st.sidebar.slider("Clients/jour (min)", 5, 50, 15)
