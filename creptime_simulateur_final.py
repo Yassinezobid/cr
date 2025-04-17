@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 
 # Configuration de la page
@@ -354,6 +353,7 @@ with col1:
     labels_produits = [f"{emoji} {produit}" for produit, emoji in zip(produits.keys(), produits.values())]
     valeurs = [couts_produits[produit] for produit in produits]
     
+    # Utilisation des couleurs de matplotlib au lieu de seaborn
     colors = plt.cm.viridis(np.linspace(0, 1, len(labels_produits)))
     
     ax1.pie(valeurs, labels=labels_produits, autopct='%1.1f%%', startangle=90, colors=colors)
@@ -368,6 +368,7 @@ with col2:
     labels_charges = [f"{emoji} {charge}" for charge, (emoji, _) in charges.items()]
     valeurs_charges = [charges_mensuelles[charge] for charge in charges]
     
+    # Utilisation des couleurs de matplotlib au lieu de seaborn
     colors2 = plt.cm.plasma(np.linspace(0, 1, len(labels_charges)))
     
     ax2.pie(valeurs_charges, labels=labels_charges, autopct='%1.1f%%', startangle=90, colors=colors2)
