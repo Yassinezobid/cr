@@ -26,12 +26,13 @@ taux_impot = st.sidebar.number_input(
     "Taux d'impôt (%)", min_value=0.0, max_value=100.0, value=25.0, step=0.1
 )
 # Nombre d'associés
-nb_associés = st.sidebar.number_input(
+nb_associes = st.sidebar.number_input(
     "Nombre d'associés", min_value=1, max_value=10, value=2, step=1
 )
 
 # Charges mensuelles fixes
-st.sidebar.subheader("💼 Charges mensuelles fixes")\loyer = st.sidebar.number_input("Loyer (€)", min_value=0.0, value=1000.0, step=50.0)
+st.sidebar.subheader("💼 Charges mensuelles fixes")
+loyer = st.sidebar.number_input("Loyer (€)", min_value=0.0, value=1000.0, step=50.0)
 salaires = st.sidebar.number_input("Salaires (€)", min_value=0.0, value=2000.0, step=100.0)
 electricite = st.sidebar.number_input("Électricité (€)", min_value=0.0, value=200.0, step=10.0)
 menage = st.sidebar.number_input("Ménage (€)", min_value=0.0, value=100.0, step=10.0)
@@ -84,10 +85,10 @@ cout_total = cout_variable + cout_fixe
 benefice_brut = revenu_brut - cout_total
 montant_impot = benefice_brut * (taux_impot / 100)
 profit_net = benefice_brut - montant_impot
-part_par_associe = profit_net / nb_associés
+part_par_associe = profit_net / nb_associes
 
 # DataFrame résumé
-resumé = pd.DataFrame({
+resume = pd.DataFrame({
     "Indicateur": [
         "Revenu brut (€)", "Coût total (€)", "Bénéfice avant impôt (€)",
         "Impôt (€)", "Profit net (€)", "Part par associé (€)"
@@ -109,7 +110,7 @@ else:
 # --- AFFICHAGE ---
 st.markdown("---")
 st.subheader("📋 Résumé financier mensuel")
-st.table(resumé)
+st.table(resume)
 
 # Graphique barres
 st.subheader("📈 Visualisation")
