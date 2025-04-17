@@ -1,275 +1,132 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FuncFormatter
 
 # Configuration de la page
 st.set_page_config(
-    page_title="Simulateur Business Plan Alimentaire",
-    page_icon="📊",
-    layout="wide"
+    page_title="📊 Simulateur Business Plan Mensuel",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-# Style CSS personnalisé
-st.markdown("""
-    <style>
-        .main {
-            background-color: #f5f5f5;
-        }
-        .sidebar .sidebar-content {
-            background-color: #ffffff;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-        }
-        .stDataFrame {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        .css-1aumxhk {
-            background-color: #ffffff;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
-""", unsafe_allow_html=True)
+# Titre principal stylé
+st.markdown(
+    "<h1 style='text-align: center; color: #4CAF50;'>📊 Simulateur de Business Plan Mensuel</h1>",
+    unsafe_allow_html=True
+)
 
-# Titre de l'application
-st.markdown("<h1 style='text-align: center; color: #2c3e50;'>📊 Simulateur Business Plan Alimentaire</h1>", unsafe_allow_html=True)
-st.markdown("<h3 style='text-align: center; color: #7f8c8d;'>Crêperie | Salon de Jus | Sucreries</h3>", unsafe_allow_html=True)
+# --- SIDEBAR ---
+st.sidebar.header("🛠️ Paramètres généraux")
+# Jours d'activité par mois
+jours_par_mois = st.sidebar.number_input(
+    "Nombre de jours d'activité par mois", min_value=1, max_value=31, value=30, step=1
+)
+# Taux d'impôt
+taux_impot = st.sidebar.number_input(
+    "Taux d'impôt (%)", min_value=0.0, max_value=100.0, value=25.0, step=0.1
+)
+# Nombre d'associés
+nb_associés = st.sidebar.number_input(
+    "Nombre d'associés", min_value=1, max_value=10, value=2, step=1
+)
 
-# Sidebar - Paramètres d'entrée
-with st.sidebar:
-    st.markdown("## 🛠️ Paramètres du Business")
-    
-    st.markdown("### 🍽️ Produits")
-    produits = {
-        "Crêpe": {"icon": "🥞"},
-        "Gaufre": {"icon": "🧇"},
-        "Pancake": {"icon": "🥞"},
-        "Glace": {"icon": "🍦"},
-        "Salade/Bowl": {"icon": "🥗"},
-        "Jus": {"icon": "🧃"},
-        "Boisson chaude": {"icon": "☕"}
-    }
-    
-    for produit, data in produits.items():
-        st.markdown(f"#### {data['icon']} {produit}")
-        produits[produit]["prix"] = st.number_input(
-            f"Prix de vente ({produit})", 
-            min_value=0.0, 
-            value=5.0 if produit in ["Crêpe", "Gaufre", "Pancake"] else 3.0,
-            key=f"prix_{produit}"
-        )
-        produits[produit]["cout"] = st.number_input(
-            f"Coût unitaire ({produit})", 
-            min_value=0.0, 
-            value=1.5 if produit in ["Crêpe", "Gaufre", "Pancake"] else 1.0,
-            key=f"cout_{produit}"
-        )
-        produits[produit]["commandes"] = st.number_input(
-            f"Commandes/jour ({produit})", 
-            min_value=0, 
-            value=20 if produit in ["Crêpe", "Gaufre", "Pancake"] else 15,
-            key=f"cmd_{produit}"
-        )
-    
-    st.markdown("### 📅 Activité")
-    jours_activite = st.number_input("Nombre de jours d'activité/mois", min_value=1, max_value=31, value=26)
-    taux_impot = st.number_input("Taux d'imposition (%)", min_value=0.0, max_value=100.0, value=25.0)
-    nb_associes = st.number_input("Nombre d'associés", min_value=1, value=2)
-    
-    st.markdown("### 💰 Charges fixes mensuelles")
-    charges = {
-        "Loyer": st.number_input("Loyer (€)", min_value=0, value=1500),
-        "Salaires": st.number_input("Salaires (€)", min_value=0, value=4000),
-        "Électricité": st.number_input("Électricité (€)", min_value=0, value=300),
-        "Ménage": st.number_input("Ménage (€)", min_value=0, value=200),
-        "Publicité": st.number_input("Publicité (€)", min_value=0, value=300),
-        "Divers": st.number_input("Divers (€)", min_value=0, value=500),
-        "Internet": st.number_input("Internet (€)", min_value=0, value=50)
-    }
-    
-    st.markdown("### 🏦 Investissements (optionnel)")
-    investissements = {
-        "Matériel": st.number_input("Matériel (€)", min_value=0, value=0),
-        "Aménagement": st.number_input("Aménagement (€)", min_value=0, value=0),
-        "Dépôt de garantie": st.number_input("Dépôt de garantie (€)", min_value=0, value=0),
-        "Autres": st.number_input("Autres investissements (€)", min_value=0, value=0)
-    }
+# Charges mensuelles fixes
+st.sidebar.subheader("💼 Charges mensuelles fixes")\loyer = st.sidebar.number_input("Loyer (€)", min_value=0.0, value=1000.0, step=50.0)
+salaires = st.sidebar.number_input("Salaires (€)", min_value=0.0, value=2000.0, step=100.0)
+electricite = st.sidebar.number_input("Électricité (€)", min_value=0.0, value=200.0, step=10.0)
+menage = st.sidebar.number_input("Ménage (€)", min_value=0.0, value=100.0, step=10.0)
+pub = st.sidebar.number_input("Publicité (€)", min_value=0.0, value=150.0, step=10.0)
+divers = st.sidebar.number_input("Divers (€)", min_value=0.0, value=100.0, step=10.0)
+internet = st.sidebar.number_input("Internet (€)", min_value=0.0, value=50.0, step=5.0)
 
-# Calcul des indicateurs financiers
-def calculer_indicateurs():
-    # Calcul des revenus et coûts par produit
-    revenu_brut = 0
-    cout_total_produits = 0
-    
-    details_produits = []
-    for produit, data in produits.items():
-        revenu_produit = data["prix"] * data["commandes"] * jours_activite
-        cout_produit = data["cout"] * data["commandes"] * jours_activite
-        revenu_brut += revenu_produit
-        cout_total_produits += cout_produit
-        
-        details_produits.append({
-            "Produit": produit,
-            "Revenu": revenu_produit,
-            "Coût": cout_produit,
-            "Marge": revenu_produit - cout_produit
-        })
-    
-    # Calcul des charges totales
-    charges_totales = sum(charges.values())
-    
-    # Calcul du bénéfice avant impôt
-    benefice_avant_impot = revenu_brut - cout_total_produits - charges_totales
-    
-    # Calcul de l'impôt
-    impot = benefice_avant_impot * (taux_impot / 100)
-    
-    # Calcul du profit net
-    profit_net = benefice_avant_impot - impot
-    
-    # Calcul de la part par associé
-    part_associe = profit_net / nb_associes if nb_associes > 0 else 0
-    
-    # Calcul des investissements totaux
-    total_investissements = sum(investissements.values())
-    
-    return {
-        "revenu_brut": revenu_brut,
-        "cout_total_produits": cout_total_produits,
-        "charges_totales": charges_totales,
-        "benefice_avant_impot": benefice_avant_impot,
-        "impot": impot,
-        "profit_net": profit_net,
-        "part_associe": part_associe,
-        "details_produits": details_produits,
-        "total_investissements": total_investissements
-    }
+# Section produits
+st.sidebar.header("🍽️ Produits vendus")
+produits = [
+    "Crêpe", "Gaufre", "Pancake", "Glace", "Salade/Bowl", "Jus", "Boisson chaude"
+]
 
-# Affichage des résultats
-resultats = calculer_indicateurs()
+data_produits = []
+for prod in produits:
+    st.sidebar.subheader(f"📦 {prod}")
+    prix = st.sidebar.number_input(f"Prix de vente unitaire {prod} (€)", min_value=0.0, value=5.0, step=0.1, key=f"prix_{prod}")
+    cout = st.sidebar.number_input(f"Coût unitaire {prod} (€)", min_value=0.0, value=2.0, step=0.1, key=f"cout_{prod}")
+    commandes = st.sidebar.number_input(f"Commandes par jour {prod}", min_value=0, value=20, step=1, key=f"cmd_{prod}")
+    data_produits.append({
+        "Produit": prod,
+        "Prix_Unitaire": prix,
+        "Coût_Unitaire": cout,
+        "Commandes_Jour": commandes
+    })
 
-# Tableau récapitulatif des indicateurs financiers
-st.markdown("## 📈 Résultats Financiers Mensuels")
+# Section charges d'investissement
+st.sidebar.header("🏗️ Charges d'investissement")
+nb_inv = st.sidebar.number_input("Nombre de charges d'investissement", min_value=0, max_value=10, value=0, step=1)
+inv_list = []
+for i in range(nb_inv):
+    nom_inv = st.sidebar.text_input(f"Nom investissement {i+1}", key=f"inv_nom_{i}")
+    val_inv = st.sidebar.number_input(f"Montant investissement {i+1} (€)", min_value=0.0, value=0.0, step=10.0, key=f"inv_val_{i}")
+    inv_list.append({"Investissement": nom_inv or f"Investissement {i+1}", "Montant": val_inv})
 
-indicateurs = pd.DataFrame({
+# --- CALCULS ---
+# DataFrame des produits
+df_prod = pd.DataFrame(data_produits)
+
+# Calculs variables
+df_prod["Revenu_Mensuel"] = df_prod["Prix_Unitaire"] * df_prod["Commandes_Jour"] * jours_par_mois
+
+df_prod["Coût_Mensuel"] = df_prod["Coût_Unitaire"] * df_prod["Commandes_Jour"] * jours_par_mois
+
+revenu_brut = df_prod["Revenu_Mensuel"].sum()
+cout_variable = df_prod["Coût_Mensuel"].sum()
+cout_fixe = loyer + salaires + electricite + menage + pub + divers + internet
+cout_total = cout_variable + cout_fixe
+
+benefice_brut = revenu_brut - cout_total
+montant_impot = benefice_brut * (taux_impot / 100)
+profit_net = benefice_brut - montant_impot
+part_par_associe = profit_net / nb_associés
+
+# DataFrame résumé
+resumé = pd.DataFrame({
     "Indicateur": [
-        "Revenu brut mensuel", 
-        "Coût total des produits", 
-        "Charges fixes mensuelles",
-        "Bénéfice avant impôt", 
-        "Impôt (" + str(taux_impot) + "%)", 
-        "Profit net mensuel",
-        "Profit net par associé (" + str(nb_associes) + " associés)"
+        "Revenu brut (€)", "Coût total (€)", "Bénéfice avant impôt (€)",
+        "Impôt (€)", "Profit net (€)", "Part par associé (€)"
     ],
-    "Montant (€)": [
-        resultats["revenu_brut"],
-        resultats["cout_total_produits"],
-        resultats["charges_totales"],
-        resultats["benefice_avant_impot"],
-        resultats["impot"],
-        resultats["profit_net"],
-        resultats["part_associe"]
+    "Valeur": [
+        revenu_brut, cout_total, benefice_brut,
+        montant_impot, profit_net, part_par_associe
     ]
 })
 
-# Formatage des montants en euros
-indicateurs["Montant (€)"] = indicateurs["Montant (€)"].apply(lambda x: f"{x:,.2f} €")
+# DataFrame investissements
+if inv_list:
+    df_inv = pd.DataFrame(inv_list)
+    total_invest = df_inv["Montant"].sum()
+else:
+    df_inv = pd.DataFrame(columns=["Investissement", "Montant"])
+    total_invest = 0.0
 
-st.dataframe(
-    indicateurs,
-    column_config={
-        "Indicateur": "Indicateur",
-        "Montant (€)": "Montant"
-    },
-    hide_index=True,
-    use_container_width=True
+# --- AFFICHAGE ---
+st.markdown("---")
+st.subheader("📋 Résumé financier mensuel")
+st.table(resumé)
+
+# Graphique barres
+st.subheader("📈 Visualisation")
+fig, ax = plt.subplots()
+ax.bar(
+    ["Revenu brut", "Coût total", "Profit net"],
+    [revenu_brut, cout_total, profit_net]
 )
-
-# Graphique des résultats
-st.markdown("## 📊 Visualisation des Résultats")
-
-fig, ax = plt.subplots(figsize=(10, 6))
-
-categories = ["Revenus", "Coûts", "Bénéfice"]
-valeurs = [
-    resultats["revenu_brut"],
-    resultats["cout_total_produits"] + resultats["charges_totales"],
-    resultats["profit_net"]
-]
-
-colors = ["#2ecc71", "#e74c3c", "#3498db"]
-bars = ax.bar(categories, valeurs, color=colors)
-
-# Ajout des valeurs sur les barres
-for bar in bars:
-    height = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width()/2., height,
-            f'{height:,.0f} €',
-            ha='center', va='bottom')
-
-# Formatage de l'axe Y en euros
-ax.yaxis.set_major_formatter(FuncFormatter(lambda x, pos: f'{x:,.0f} €'))
-
-ax.set_title("Résultats Financiers Mensuels", pad=20)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-
+ax.set_ylabel("Montant (€)")
+ax.set_title("Comparatif des indicateurs clés")
 st.pyplot(fig)
 
-# Détails par produit
-st.markdown("## 🍽️ Performance par Produit")
+# Section investissements
+if not df_inv.empty:
+    st.markdown("---")
+    st.subheader("🏗️ Détail des charges d'investissement")
+    st.table(df_inv)
+    st.write(f"**Total Investissement :** €{total_invest:,.2f}")
 
-details_df = pd.DataFrame(resultats["details_produits"])
-details_df["Revenu"] = details_df["Revenu"].apply(lambda x: f"{x:,.2f} €")
-details_df["Coût"] = details_df["Coût"].apply(lambda x: f"{x:,.2f} €")
-details_df["Marge"] = details_df["Marge"].apply(lambda x: f"{x:,.2f} €")
-
-st.dataframe(
-    details_df,
-    column_config={
-        "Produit": "Produit",
-        "Revenu": "Revenu",
-        "Coût": "Coût",
-        "Marge": "Marge"
-    },
-    hide_index=True,
-    use_container_width=True
-)
-
-# Section investissements (optionnel)
-if any(value > 0 for value in investissements.values()):
-    st.markdown("## 🏦 Investissements")
-    
-    invest_df = pd.DataFrame({
-        "Type": list(investissements.keys()),
-        "Montant (€)": list(investissements.values())
-    })
-    
-    invest_df["Montant (€)"] = invest_df["Montant (€)"].apply(lambda x: f"{x:,.2f} €")
-    
-    st.dataframe(
-        invest_df,
-        column_config={
-            "Type": "Type d'investissement",
-            "Montant (€)": "Montant"
-        },
-        hide_index=True,
-        use_container_width=True
-    )
-    
-    st.markdown(f"**Total des investissements : {resultats['total_investissements']:,.2f} €**")
-
-# Notes et informations supplémentaires
-with st.expander("ℹ️ Notes et informations"):
-    st.markdown("""
-        - **Revenu brut mensuel** : Somme des ventes de tous les produits
-        - **Coût total des produits** : Coût des matières premières pour tous les produits vendus
-        - **Charges fixes** : Dépenses mensuelles récurrentes (loyer, salaires, etc.)
-        - **Bénéfice avant impôt** : Revenu brut - Coût des produits - Charges fixes
-        - **Impôt** : Calculé sur le bénéfice avant impôt selon le taux spécifié
-        - **Profit net** : Bénéfice après déduction de l'impôt
-    """)
+st.markdown("<p style='text-align: center; color: gray;'>Made with ❤️ by Streamlit</p>", unsafe_allow_html=True)
