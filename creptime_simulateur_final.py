@@ -28,38 +28,18 @@ def local_css():
         margin-bottom: 1rem;
         font-weight: bold;
     }
-    .card {
-        background-color: #f8f9fa;
-        padding: 1.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        margin-bottom: 1.5rem;
-    }
     .metric-value {
         font-size: 1.8rem;
         font-weight: bold;
-        color: #495057;
     }
     .metric-label {
         font-size: 1rem;
-        color: #6c757d;
-    }
-    .table-header {
-        font-weight: bold;
-        background-color: #4ECDC4 !important;
-        color: white !important;
     }
     .positive-value {
         color: #28a745;
-        font-weight: bold;
     }
     .negative-value {
         color: #dc3545;
-        font-weight: bold;
-    }
-    .total-row {
-        font-weight: bold;
-        background-color: #e9ecef;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -108,7 +88,7 @@ for produit, emoji in produits.items():
                 25.0 if "Salades" in produit else (
                 18.0 if "Jus" in produit else 3.0
                 ))))),
-            step=1,
+            step=0.5,
             format="%.2f",
             key=f"prix_{produit}"
         )
@@ -124,7 +104,7 @@ for produit, emoji in produits.items():
                 14.0 if "Salades" in produit else (
                 8.0 if "Jus" in produit else 0.8
                 ))))),
-            step=1,
+            step=0.1,
             format="%.2f",
             key=f"cout_{produit}"
         )
@@ -139,7 +119,7 @@ for produit, emoji in produits.items():
             int(10) if "Salades" in produit else (
             int(10) if "Jus" in produit else int(40)
             ))))),
-        step=5,
+        step=1,
         key=f"commandes_{produit}"
     )
     st.sidebar.markdown("---")
@@ -264,19 +244,16 @@ col1, col2 = st.columns([2, 1])
 
 with col1:
     # Affichage bien visible du total des profits nets
-    st.markdown('<div class="card">', unsafe_allow_html=True)
+    st.markdown("## 💰 Résumé financier")
     col_profit1, col_profit2, col_profit3 = st.columns(3)
     with col_profit1:
-        st.markdown('<p class="metric-label">Profit Net Total</p>', unsafe_allow_html=True)
-        st.markdown(f'<p class="metric-value {"positive-value" if profit_net > 0 else "negative-value"}">{profit_net:.2f} Dh</p>', unsafe_allow_html=True)
+        st.metric(label="Profit Net Total", value=f"{profit_net:.2f} Dh", 
+                delta=f"{profit_net:.1f} Dh" if profit_net > 0 else f"-{abs(profit_net):.1f} Dh")
     with col_profit2:
-        st.markdown('<p class="metric-label">Par Associé</p>', unsafe_allow_html=True)
-        st.markdown(f'<p class="metric-value {"positive-value" if profit_par_associe > 0 else "negative-value"}">{profit_par_associe:.2f} Dh</p>', unsafe_allow_html=True)
+        st.metric(label="Par Associé", value=f"{profit_par_associe:.2f} Dh")
     with col_profit3:
-        st.markdown('<p class="metric-label">Retour sur Investissement</p>', unsafe_allow_html=True)
         roi = (profit_net * 12 / total_investissement * 100) if total_investissement > 0 else 0
-        st.markdown(f'<p class="metric-value {"positive-value" if roi > 0 else "negative-value"}">{roi:.2f}%</p>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(label="ROI annuel", value=f"{roi:.2f}%")
     
     st.markdown('<p class="sub-header">📊 Tableau de bord financier</p>', unsafe_allow_html=True)
     
@@ -290,16 +267,9 @@ with col1:
     }
     
     df_resume = pd.DataFrame(data_resume)
-    
-    # Formater les valeurs monétaires
     df_resume["Montant (Dh)"] = df_resume["Montant (Dh)"].apply(lambda x: f"{x:.2f} Dh")
     
-    # Appliquer un style au tableau
-    def style_tableau_resume(df):
-        return df.style.apply(lambda x: ['background-color: #f8f9fa' for _ in x], axis=1)\
-                      .set_properties(**{'text-align': 'center'})
-    
-    st.table(style_tableau_resume(df_resume))
+    st.dataframe(df_resume, use_container_width=True)
     
     # Tableau détaillé des produits
     st.markdown('<p class="sub-header">🍽️ Détails par produit</p>', unsafe_allow_html=True)
@@ -323,41 +293,26 @@ with col1:
     for col in colonnes_monetaires:
         df_produits[col] = df_produits[col].apply(lambda x: f"{x:.2f} Dh")
     
-    # Ajouter une ligne de total
-    total_row = pd.DataFrame({
-        "Produit": ["<b>TOTAL</b>"],
-        "Prix unitaire (Dh)": [""],
-        "Coût unitaire (Dh)": [""],
-        "Marge unitaire (Dh)": [""],
-        "Commandes/jour": [sum(commandes_jour.values())],
-        "Revenu mensuel (Dh)": [f"{sum(revenus_produits.values()):.2f} Dh"],
-        "Coût mensuel (Dh)": [f"{sum(couts_produits.values()):.2f} Dh"],
-        "Marge mensuelle (Dh)": [f"{sum(marges_produits.values()):.2f} Dh"]
-    })
+    st.dataframe(df_produits, use_container_width=True)
     
-    df_produits = pd.concat([df_produits, total_row], ignore_index=True)
+    # Ligne de total séparée pour une meilleure visibilité
+    st.markdown("### Total des produits")
+    total_col1, total_col2, total_col3, total_col4 = st.columns(4)
     
-    def style_produits_table(df):
-        return df.style.apply(lambda x: ['background-color: #e9ecef' if i == len(df) - 1 else '' for i in range(len(df))], axis=0)\
-                     .set_properties(**{'text-align': 'center'})
-    
-    st.table(style_produits_table(df_produits))
-    
-    # Ajouter un récapitulatif bien visible
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("### 🧾 Récapitulatif des produits")
-    col_recap1, col_recap2, col_recap3 = st.columns(3)
-    with col_recap1:
-        st.markdown('<p class="metric-label">Revenu total des produits</p>', unsafe_allow_html=True)
-        st.markdown(f'<p class="metric-value">{sum(revenus_produits.values()):.2f} Dh</p>', unsafe_allow_html=True)
-    with col_recap2:
-        st.markdown('<p class="metric-label">Coût total des produits</p>', unsafe_allow_html=True)
-        st.markdown(f'<p class="metric-value">{sum(couts_produits.values()):.2f} Dh</p>', unsafe_allow_html=True)
-    with col_recap3:
-        st.markdown('<p class="metric-label">Marge totale des produits</p>', unsafe_allow_html=True)
+    with total_col1:
+        st.metric(label="Commandes totales / jour", 
+                 value=f"{sum(commandes_jour.values())}")
+    with total_col2:
+        st.metric(label="Revenu mensuel total", 
+                 value=f"{sum(revenus_produits.values()):.2f} Dh")
+    with total_col3:
+        st.metric(label="Coût mensuel total", 
+                 value=f"{sum(couts_produits.values()):.2f} Dh")
+    with total_col4:
         total_marge = sum(marges_produits.values())
-        st.markdown(f'<p class="metric-value {"positive-value" if total_marge > 0 else "negative-value"}">{total_marge:.2f} Dh</p>', unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+        st.metric(label="Marge mensuelle totale", 
+                 value=f"{total_marge:.2f} Dh",
+                 delta=f"{total_marge:.1f}" if total_marge > 0 else f"-{abs(total_marge):.1f}")
 
 with col2:
     # Visualisation du profit net
@@ -402,14 +357,11 @@ with col2:
     df_charges = pd.DataFrame(data_charges)
     df_charges["Montant (Dh)"] = df_charges["Montant (Dh)"].apply(lambda x: f"{x:.2f} Dh")
     
-    # Ajouter une ligne de total
-    df_charges.loc[len(df_charges)] = ["<b>Total</b>", f"{sum(charges_mensuelles.values()):.2f} Dh"]
+    st.dataframe(df_charges, use_container_width=True)
     
-    def style_charges_table(df):
-        return df.style.apply(lambda x: ['background-color: #e9ecef' if i == len(df) - 1 else '' for i in range(len(df))], axis=0)\
-                     .set_properties(**{'text-align': 'center'})
-    
-    st.table(style_charges_table(df_charges))
+    # Total des charges affiché de manière visible
+    st.metric(label="Total des charges fixes", 
+             value=f"{sum(charges_mensuelles.values()):.2f} Dh")
     
     # Tableau des investissements (Bonus)
     st.markdown('<p class="sub-header">🏗️ Charges d\'investissement</p>', unsafe_allow_html=True)
@@ -421,13 +373,12 @@ with col2:
     
     df_inv = pd.DataFrame(data_inv)
     df_inv["Montant (Dh)"] = df_inv["Montant (Dh)"].apply(lambda x: f"{x:.2f} Dh")
-    df_inv.loc[len(df_inv)] = ["<b>Total</b>", f"{sum(charges_investissement_inputs.values()):.2f} Dh"]
     
-    def style_inv_table(df):
-        return df.style.apply(lambda x: ['background-color: #e9ecef' if i == len(df) - 1 else '' for i in range(len(df))], axis=0)\
-                     .set_properties(**{'text-align': 'center'})
+    st.dataframe(df_inv, use_container_width=True)
     
-    st.table(style_inv_table(df_inv))
+    # Total des investissements affiché de manière visible
+    st.metric(label="Total des investissements", 
+             value=f"{total_investissement:.2f} Dh")
 
 # Graphique en camembert pour la répartition des coûts
 st.markdown('<p class="sub-header">📉 Répartition des coûts</p>', unsafe_allow_html=True)
@@ -481,34 +432,39 @@ with col2:
 # Analyse de rentabilité
 st.markdown('<p class="sub-header">📈 Analyse de rentabilité</p>', unsafe_allow_html=True)
 
-# Calcul du point mort (seuil de rentabilité)
-if revenu_brut > 0:
-    seuil_rentabilite = cout_fixe / (1 - (cout_variable / revenu_brut))
-    st.markdown(f"🎯 **Seuil de rentabilité mensuel:** {seuil_rentabilite:.2f} Dh")
-    st.markdown(f"📈 **Marge sur coût variable:** {(1 - (cout_variable / revenu_brut)) * 100:.2f}%")
+# Utilisation de colonnes pour une meilleure organisation
+col1, col2 = st.columns(2)
 
-# Calcul du ROI
-if total_investissement > 0:
-    roi_mensuel = profit_net / total_investissement * 100
-    roi_annuel = roi_mensuel * 12
-    temps_retour = total_investissement / profit_net if profit_net > 0 else float('inf')
-    
-    st.markdown(f"💰 **ROI mensuel:** {roi_mensuel:.2f}%")
-    st.markdown(f"📆 **ROI annuel:** {roi_annuel:.2f}%")
-    
-    if profit_net > 0:
-        st.markdown(f"⏱️ **Temps de retour sur investissement:** {temps_retour:.1f} mois ({temps_retour/12:.1f} ans)")
+with col1:
+    # Calcul du point mort (seuil de rentabilité)
+    if revenu_brut > 0:
+        seuil_rentabilite = cout_fixe / (1 - (cout_variable / revenu_brut))
+        st.metric(label="Seuil de rentabilité mensuel", value=f"{seuil_rentabilite:.2f} Dh")
+        st.metric(label="Marge sur coût variable", value=f"{(1 - (cout_variable / revenu_brut)) * 100:.2f}%")
+
+with col2:
+    # Calcul du ROI
+    if total_investissement > 0:
+        roi_mensuel = profit_net / total_investissement * 100
+        roi_annuel = roi_mensuel * 12
+        temps_retour = total_investissement / profit_net if profit_net > 0 else float('inf')
+        
+        st.metric(label="ROI mensuel", value=f"{roi_mensuel:.2f}%")
+        st.metric(label="ROI annuel", value=f"{roi_annuel:.2f}%")
+        
+        if profit_net > 0:
+            st.metric(label="Temps de retour sur investissement", 
+                     value=f"{temps_retour:.1f} mois ({temps_retour/12:.1f} ans)")
+        else:
+            st.warning("Le profit net est négatif ou nul, impossible de calculer le temps de retour sur investissement.")
     else:
-        st.markdown("⚠️ **Le profit net est négatif ou nul, impossible de calculer le temps de retour sur investissement.**")
-else:
-    st.warning("Veuillez définir des charges d'investissement pour calculer le ROI.")
+        st.warning("Veuillez définir des charges d'investissement pour calculer le ROI.")
 
 # Affichage d'un rapport final et des recommandations
 st.markdown('<p class="sub-header">🔍 Rapport final et recommandations</p>', unsafe_allow_html=True)
 
-st.markdown('<div class="card">', unsafe_allow_html=True)
 if profit_net > 0:
-    st.markdown("✅ **Votre projet est rentable!**")
+    st.success("✅ **Votre projet est rentable!**")
     
     # Calcul des produits les plus rentables
     marges_produits_list = [(p, marges_produits[p]) for p in produits]
@@ -524,10 +480,9 @@ if profit_net > 0:
     st.markdown("- Envisagez une expansion progressive après la période de retour sur investissement")
     st.markdown("- Surveillez régulièrement les coûts variables pour maintenir votre marge bénéficiaire")
 else:
-    st.markdown("⚠️ **Votre projet n'est pas rentable dans sa configuration actuelle.**")
+    st.error("⚠️ **Votre projet n'est pas rentable dans sa configuration actuelle.**")
     st.markdown("### 💡 Recommandations:")
     st.markdown("- Augmentez les prix de vente ou le volume des ventes")
     st.markdown("- Réduisez les coûts fixes ou les coûts variables")
     st.markdown("- Concentrez-vous sur les produits à plus forte marge")
     st.markdown("- Réévaluez les investissements initiaux")
-st.markdown('</div>', unsafe_allow_html=True)
