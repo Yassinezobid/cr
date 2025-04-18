@@ -352,15 +352,13 @@ with col2:
     st.markdown('<p class="sub-header">🏗️ Charges d\'investissement</p>', unsafe_allow_html=True)
     
     data_inv = {
-        "Investissement": [f"{emoji} {inv}" for inv, (emoji, _) in investissements.items()],
-        "Montant (€)": [charges_investissement[inv] for inv in investissements]
+        "Investissement": list(charges_investissement_inputs.keys()),
+        "Montant": list(charges_investissement_inputs.values())
     }
     
     df_inv = pd.DataFrame(data_inv)
-    df_inv["Montant (€)"] = df_inv["Montant (€)"].apply(lambda x: f"{x:.2f} €")
-    
-    # Ajouter une ligne de total
-    df_inv.loc[len(df_inv)] = ["Total", f"{total_investissement:.2f} €"]
+    df_inv["Montant"] = df_inv["Montant"].apply(lambda x: f"{x:.2f}")
+    df_inv.loc[len(df_inv)] = ["Total", f"{sum(charges_investissement_inputs.values()):.2f}"]
     
     st.table(df_inv)
 
