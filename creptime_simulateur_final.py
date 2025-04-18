@@ -133,7 +133,7 @@ for produit, emoji in produits.items():
             12 if "Pancakes" in produit else (
             20 if "Glaces" in produit else (
             10 if "Salades" in produit else (
-            30 if "Jus" in produit else 40
+            10 if "Jus" in produit else 40
             ))))),
         step=1,
         key=f"commandes_{produit}"
