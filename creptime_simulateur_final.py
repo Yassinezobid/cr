@@ -305,6 +305,16 @@ with col1:
         df_produits[col] = df_produits[col].apply(lambda x: f"{x:.2f} €")
     
     st.table(df_produits)
+    
+    # Ajouter un total général à la fin
+    total_marge = sum(marges_produits.values())
+    total_revenu = sum(revenus_produits.values())
+    total_cout = sum(couts_produits.values())
+    
+    st.markdown("### 🧾 Récapitulatif des produits")
+    st.markdown(f"**Revenu total des produits :** {total_revenu:.2f} Dh")
+    st.markdown(f"**Coût total des produits :** {total_cout:.2f} Dh")
+    st.markdown(f"**Profit net total (produits) :** {total_marge:.2f} Dh")
 
 with col2:
     # Visualisation du profit net
