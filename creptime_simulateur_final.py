@@ -97,12 +97,12 @@ for produit, emoji in produits.items():
         prix_vente[produit] = st.number_input(
             f"Prix de vente (€)",
             min_value=0.0,
-            value=5.0 if "Crêpes" in produit else (
-                7.0 if "Gaufres" in produit else (
-                6.0 if "Pancakes" in produit else (
-                4.0 if "Glaces" in produit else (
-                9.0 if "Salades" in produit else (
-                4.5 if "Jus" in produit else 3.0
+            value=30.0 if "Crêpes" in produit else ( 
+                25.0 if "Gaufres" in produit else (
+                25.0 if "Pancakes" in produit else (
+                14.0 if "Glaces" in produit else (
+                25.0 if "Salades" in produit else (
+                18.0 if "Jus" in produit else 3.0
                 ))))),
             step=0.5,
             format="%.2f",
@@ -113,12 +113,12 @@ for produit, emoji in produits.items():
         cout_unitaire[produit] = st.number_input(
             f"Coût unitaire (€)",
             min_value=0.0,
-            value=1.5 if "Crêpes" in produit else (
-                2.0 if "Gaufres" in produit else (
-                1.8 if "Pancakes" in produit else (
-                1.2 if "Glaces" in produit else (
-                3.5 if "Salades" in produit else (
-                1.2 if "Jus" in produit else 0.8
+            value=8 if "Crêpes" in produit else (
+                8 if "Gaufres" in produit else (
+                7 if "Pancakes" in produit else (
+                4 if "Glaces" in produit else (
+                14 if "Salades" in produit else (
+                8 if "Jus" in produit else 0.8
                 ))))),
             step=0.1,
             format="%.2f",
