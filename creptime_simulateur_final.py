@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
- 
+
 # Configuration de la page
 st.set_page_config(
     page_title="SimuProfit - Business Plan",
@@ -102,7 +102,7 @@ for produit, emoji in produits.items():
                 25.0 if "Pancakes" in produit else (
                 14.0 if "Glaces" in produit else (
                 25.0 if "Salades" in produit else (
-                18.0 if "Jus" in produit else 14.0
+                18.0 if "Jus" in produit else 3.0
                 ))))),
             step=0.5,
             format="%.2f",
@@ -118,7 +118,7 @@ for produit, emoji in produits.items():
                 7.0 if "Pancakes" in produit else (
                 4.0 if "Glaces" in produit else (
                 14.0 if "Salades" in produit else (
-                8.0 if "Jus" in produit else 5.0
+                8.0 if "Jus" in produit else 0.8
                 ))))),
             step=0.1,
             format="%.2f",
@@ -188,23 +188,45 @@ for charge, (emoji, valeur_defaut) in charges.items():
         format="%.2f"
     )
 
-# Charges d'investissement (Bonus)
-st.sidebar.markdown("### 🏗️ Charges d'investissement")
+# Charges d'investissement (nouvelle version)
+st.sidebar.markdown("### 🏗️ Inventaire des charges d’investissement")
 
-investissements = {
-    "Équipement cuisine": ("🍳", 5000),
-    "Mobilier": ("🪑", 3000),
-    "Décoration": ("🎨", 1500),
-    "Informatique": ("💻", 1200),
-    "Rénovation": ("🔨", 2000)
+charges_investissement = {
+    # Équipements
+    "Crépier": 7000,
+    "Gauffrel": 3750,
+    "Plaque & Pancakes": 650,
+    "Blender": 1500,
+    "Extracteur de jus": 2250,
+    "Machine café": 30000,
+    "Vitrine 2 glaces": 17500,
+    "Réfrigérateur": 5000,
+    "Congélateur": 3000,
+    "Presse agrume": 1750,
+    "Ustensiles": 4000,
+    "Produits initiales": 20000,
+
+    # Aménagement / Design Intérieur
+    "Peinture & Travaux": 10000,
+    "Décoration & Lumières": 20000,
+    "Étagères": 3500,
+    "Comptoir": 5000,
+    "Tables + Chaises": 2500,
+    "Panneaux extérieurs": 10000,
+    "TV + Caisse enregistreuse": 10000,
+    "Caméras de surveillance": 3000,
+
+    # Divers
+    "Loyer": 18000,
+    "Publicités": 15000
 }
 
-charges_investissement = {}
-for inv, (emoji, valeur_defaut) in investissements.items():
-    charges_investissement[inv] = st.sidebar.number_input(
-        f"{emoji} {inv} (€)",
+charges_investissement_inputs = {}
+for inv, montant in charges_investissement.items():
+    charges_investissement_inputs[inv] = st.sidebar.number_input(
+        f"{inv}",
         min_value=0.0,
-        value=float(valeur_defaut),
+        value=float(montant),
         step=100.0,
         format="%.2f"
     )
