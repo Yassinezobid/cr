@@ -57,6 +57,10 @@ def local_css():
         color: #dc3545;
         font-weight: bold;
     }
+    .total-row {
+        font-weight: bold;
+        background-color: #e9ecef;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -95,7 +99,7 @@ for produit, emoji in produits.items():
     
     with col1:
         prix_vente[produit] = st.number_input(
-            f"Prix de vente (€)",
+            f"Prix de vente (Dh)",
             min_value=0.0,
             value=30.0 if "Crêpes" in produit else (
                 25.0 if "Gaufres" in produit else (
@@ -111,7 +115,7 @@ for produit, emoji in produits.items():
         
     with col2:
         cout_unitaire[produit] = st.number_input(
-            f"Coût unitaire (€)",
+            f"Coût unitaire (Dh)",
             min_value=0.0,
             value=8.0 if "Crêpes" in produit else (
                 8.0 if "Gaufres" in produit else (
@@ -181,7 +185,7 @@ charges = {
 charges_mensuelles = {}
 for charge, (emoji, valeur_defaut) in charges.items():
     charges_mensuelles[charge] = st.sidebar.number_input(
-        f"{emoji} {charge} (€)",
+        f"{emoji} {charge} (Dh)",
         min_value=0.0,
         value=float(valeur_defaut),
         step=10.0,
@@ -189,7 +193,7 @@ for charge, (emoji, valeur_defaut) in charges.items():
     )
 
 # Charges d'investissement (nouvelle version)
-st.sidebar.markdown("### 🏗️ Inventaire des charges d’investissement")
+st.sidebar.markdown("### 🏗️ Inventaire des charges d'investissement")
 
 charges_investissement = {
     # Équipements
@@ -253,27 +257,42 @@ profit_net = benefice_brut - impot
 profit_par_associe = profit_net / nb_associes if nb_associes > 0 else 0
 
 # Total des investissements
-total_investissement = sum(charges_investissement.values())
+total_investissement = sum(charges_investissement_inputs.values())
 
 # Contenu principal
 col1, col2 = st.columns([2, 1])
 
 with col1:
+    # Affichage bien visible du total des profits nets
+    st.markdown('<div class="card">', unsafe_allow_html=True)
+    col_profit1, col_profit2, col_profit3 = st.columns(3)
+    with col_profit1:
+        st.markdown('<p class="metric-label">Profit Net Total</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="metric-value {"positive-value" if profit_net > 0 else "negative-value"}">{profit_net:.2f} Dh</p>', unsafe_allow_html=True)
+    with col_profit2:
+        st.markdown('<p class="metric-label">Par Associé</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="metric-value {"positive-value" if profit_par_associe > 0 else "negative-value"}">{profit_par_associe:.2f} Dh</p>', unsafe_allow_html=True)
+    with col_profit3:
+        st.markdown('<p class="metric-label">Retour sur Investissement</p>', unsafe_allow_html=True)
+        roi = (profit_net * 12 / total_investissement * 100) if total_investissement > 0 else 0
+        st.markdown(f'<p class="metric-value {"positive-value" if roi > 0 else "negative-value"}">{roi:.2f}%</p>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
     st.markdown('<p class="sub-header">📊 Tableau de bord financier</p>', unsafe_allow_html=True)
     
     # Tableau résumé des indicateurs financiers
     data_resume = {
         "Indicateur": ["Revenu brut mensuel", "Coût variable (produits)", "Coût fixe (charges)",
-                     "Coût total mensuel", "Bénéfice avant impôt", f"Impôt ({taux_impot}%)",
-                     "Profit net mensuel", f"Profit par associé ({nb_associes})"],
-        "Montant (€)": [revenu_brut, cout_variable, cout_fixe, cout_total,
-                      benefice_brut, impot, profit_net, profit_par_associe]
+                         "Coût total mensuel", "Bénéfice avant impôt", f"Impôt ({taux_impot}%)",
+                         "Profit net mensuel", f"Profit par associé ({nb_associes})"],
+        "Montant (Dh)": [revenu_brut, cout_variable, cout_fixe, cout_total,
+                          benefice_brut, impot, profit_net, profit_par_associe]
     }
     
     df_resume = pd.DataFrame(data_resume)
     
     # Formater les valeurs monétaires
-    df_resume["Montant (€)"] = df_resume["Montant (€)"].apply(lambda x: f"{x:.2f} €")
+    df_resume["Montant (Dh)"] = df_resume["Montant (Dh)"].apply(lambda x: f"{x:.2f} Dh")
     
     # Appliquer un style au tableau
     def style_tableau_resume(df):
@@ -287,34 +306,58 @@ with col1:
     
     data_produits = {
         "Produit": [f"{emoji} {produit}" for produit, emoji in zip(produits.keys(), produits.values())],
-        "Prix unitaire (€)": [prix_vente[produit] for produit in produits],
-        "Coût unitaire (€)": [cout_unitaire[produit] for produit in produits],
-        "Marge unitaire (€)": [prix_vente[produit] - cout_unitaire[produit] for produit in produits],
+        "Prix unitaire (Dh)": [prix_vente[produit] for produit in produits],
+        "Coût unitaire (Dh)": [cout_unitaire[produit] for produit in produits],
+        "Marge unitaire (Dh)": [prix_vente[produit] - cout_unitaire[produit] for produit in produits],
         "Commandes/jour": [commandes_jour[produit] for produit in produits],
-        "Revenu mensuel (€)": [revenus_produits[produit] for produit in produits],
-        "Coût mensuel (€)": [couts_produits[produit] for produit in produits],
-        "Marge mensuelle (€)": [marges_produits[produit] for produit in produits]
+        "Revenu mensuel (Dh)": [revenus_produits[produit] for produit in produits],
+        "Coût mensuel (Dh)": [couts_produits[produit] for produit in produits],
+        "Marge mensuelle (Dh)": [marges_produits[produit] for produit in produits]
     }
     
     df_produits = pd.DataFrame(data_produits)
     
     # Formater les valeurs monétaires
-    colonnes_monetaires = ["Prix unitaire (€)", "Coût unitaire (€)", "Marge unitaire (€)",
-                          "Revenu mensuel (€)", "Coût mensuel (€)", "Marge mensuelle (€)"]
+    colonnes_monetaires = ["Prix unitaire (Dh)", "Coût unitaire (Dh)", "Marge unitaire (Dh)",
+                          "Revenu mensuel (Dh)", "Coût mensuel (Dh)", "Marge mensuelle (Dh)"]
     for col in colonnes_monetaires:
-        df_produits[col] = df_produits[col].apply(lambda x: f"{x:.2f} €")
+        df_produits[col] = df_produits[col].apply(lambda x: f"{x:.2f} Dh")
     
-    st.table(df_produits)
+    # Ajouter une ligne de total
+    total_row = pd.DataFrame({
+        "Produit": ["<b>TOTAL</b>"],
+        "Prix unitaire (Dh)": [""],
+        "Coût unitaire (Dh)": [""],
+        "Marge unitaire (Dh)": [""],
+        "Commandes/jour": [sum(commandes_jour.values())],
+        "Revenu mensuel (Dh)": [f"{sum(revenus_produits.values()):.2f} Dh"],
+        "Coût mensuel (Dh)": [f"{sum(couts_produits.values()):.2f} Dh"],
+        "Marge mensuelle (Dh)": [f"{sum(marges_produits.values()):.2f} Dh"]
+    })
     
-    # Ajouter un total général à la fin
-    total_marge = sum(marges_produits.values())
-    total_revenu = sum(revenus_produits.values())
-    total_cout = sum(couts_produits.values())
+    df_produits = pd.concat([df_produits, total_row], ignore_index=True)
     
+    def style_produits_table(df):
+        return df.style.apply(lambda x: ['background-color: #e9ecef' if i == len(df) - 1 else '' for i in range(len(df))], axis=0)\
+                     .set_properties(**{'text-align': 'center'})
+    
+    st.table(style_produits_table(df_produits))
+    
+    # Ajouter un récapitulatif bien visible
+    st.markdown('<div class="card">', unsafe_allow_html=True)
     st.markdown("### 🧾 Récapitulatif des produits")
-    st.markdown(f"**Revenu total des produits :** {total_revenu:.2f} Dh")
-    st.markdown(f"**Coût total des produits :** {total_cout:.2f} Dh")
-    st.markdown(f"**Profit net total (produits) :** {total_marge:.2f} Dh")
+    col_recap1, col_recap2, col_recap3 = st.columns(3)
+    with col_recap1:
+        st.markdown('<p class="metric-label">Revenu total des produits</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="metric-value">{sum(revenus_produits.values()):.2f} Dh</p>', unsafe_allow_html=True)
+    with col_recap2:
+        st.markdown('<p class="metric-label">Coût total des produits</p>', unsafe_allow_html=True)
+        st.markdown(f'<p class="metric-value">{sum(couts_produits.values()):.2f} Dh</p>', unsafe_allow_html=True)
+    with col_recap3:
+        st.markdown('<p class="metric-label">Marge totale des produits</p>', unsafe_allow_html=True)
+        total_marge = sum(marges_produits.values())
+        st.markdown(f'<p class="metric-value {"positive-value" if total_marge > 0 else "negative-value"}">{total_marge:.2f} Dh</p>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     # Visualisation du profit net
@@ -323,19 +366,25 @@ with col2:
     # Préparation des données pour le graphique
     labels = ['Revenu brut', 'Coût total', 'Bénéfice brut', 'Impôt', 'Profit net']
     values = [revenu_brut, cout_total, benefice_brut, impot, profit_net]
-    colors = ['#4ECDC4', '#FF6B6B', '#FFD166', '#073B4C', '#06D6A0']
     
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.bar(labels, values, color=colors)
+    bars = ax.bar(labels, values)
     
-    plt.ylabel('Montant (€)')
+    # Coloriser les barres selon les valeurs positives/négatives
+    for i, bar in enumerate(bars):
+        if values[i] < 0:
+            bar.set_color('#dc3545')  # Rouge pour valeurs négatives
+        else:
+            bar.set_color('#28a745')  # Vert pour valeurs positives
+    
+    plt.ylabel('Montant (Dh)')
     plt.title('Répartition financière mensuelle')
     
     # Ajouter les valeurs au-dessus des barres
     for bar in bars:
         height = bar.get_height()
         ax.text(bar.get_x() + bar.get_width()/2., height + 50,
-                f'{height:.2f} €', ha='center', va='bottom')
+                f'{height:.2f} Dh', ha='center', va='bottom')
     
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
@@ -347,30 +396,38 @@ with col2:
     
     data_charges = {
         "Charge": [f"{emoji} {charge}" for charge, (emoji, _) in charges.items()],
-        "Montant (€)": [charges_mensuelles[charge] for charge in charges]
+        "Montant (Dh)": [charges_mensuelles[charge] for charge in charges]
     }
     
     df_charges = pd.DataFrame(data_charges)
-    df_charges["Montant (€)"] = df_charges["Montant (€)"].apply(lambda x: f"{x:.2f} €")
+    df_charges["Montant (Dh)"] = df_charges["Montant (Dh)"].apply(lambda x: f"{x:.2f} Dh")
     
     # Ajouter une ligne de total
-    df_charges.loc[len(df_charges)] = ["Total", f"{sum(charges_mensuelles.values()):.2f} €"]
+    df_charges.loc[len(df_charges)] = ["<b>Total</b>", f"{sum(charges_mensuelles.values()):.2f} Dh"]
     
-    st.table(df_charges)
+    def style_charges_table(df):
+        return df.style.apply(lambda x: ['background-color: #e9ecef' if i == len(df) - 1 else '' for i in range(len(df))], axis=0)\
+                     .set_properties(**{'text-align': 'center'})
+    
+    st.table(style_charges_table(df_charges))
     
     # Tableau des investissements (Bonus)
     st.markdown('<p class="sub-header">🏗️ Charges d\'investissement</p>', unsafe_allow_html=True)
     
     data_inv = {
         "Investissement": list(charges_investissement_inputs.keys()),
-        "Montant": list(charges_investissement_inputs.values())
+        "Montant (Dh)": list(charges_investissement_inputs.values())
     }
     
     df_inv = pd.DataFrame(data_inv)
-    df_inv["Montant"] = df_inv["Montant"].apply(lambda x: f"{x:.2f}")
-    df_inv.loc[len(df_inv)] = ["Total", f"{sum(charges_investissement_inputs.values()):.2f}"]
+    df_inv["Montant (Dh)"] = df_inv["Montant (Dh)"].apply(lambda x: f"{x:.2f} Dh")
+    df_inv.loc[len(df_inv)] = ["<b>Total</b>", f"{sum(charges_investissement_inputs.values()):.2f} Dh"]
     
-    st.table(df_inv)
+    def style_inv_table(df):
+        return df.style.apply(lambda x: ['background-color: #e9ecef' if i == len(df) - 1 else '' for i in range(len(df))], axis=0)\
+                     .set_properties(**{'text-align': 'center'})
+    
+    st.table(style_inv_table(df_inv))
 
 # Graphique en camembert pour la répartition des coûts
 st.markdown('<p class="sub-header">📉 Répartition des coûts</p>', unsafe_allow_html=True)
@@ -383,14 +440,21 @@ with col1:
     labels_produits = [f"{emoji} {produit}" for produit, emoji in zip(produits.keys(), produits.values())]
     valeurs = [couts_produits[produit] for produit in produits]
     
-    # Utilisation des couleurs de matplotlib au lieu de seaborn
-    colors = plt.cm.viridis(np.linspace(0, 1, len(labels_produits)))
+    # Filtrer les produits sans coûts pour une meilleure lisibilité
+    filtered_labels = []
+    filtered_values = []
+    for label, value in zip(labels_produits, valeurs):
+        if value > 0:
+            filtered_labels.append(label)
+            filtered_values.append(value)
     
-    ax1.pie(valeurs, labels=labels_produits, autopct='%1.1f%%', startangle=90, colors=colors)
-    ax1.axis('equal')
-    plt.title('Répartition des coûts variables par produit')
-    
-    st.pyplot(fig1)
+    if sum(filtered_values) > 0:
+        ax1.pie(filtered_values, labels=filtered_labels, autopct='%1.1f%%', startangle=90)
+        ax1.axis('equal')
+        plt.title('Répartition des coûts variables par produit')
+        st.pyplot(fig1)
+    else:
+        st.warning("Aucun coût variable à afficher. Veuillez définir des produits avec des coûts.")
 
 with col2:
     # Camembert des charges fixes
@@ -398,127 +462,72 @@ with col2:
     labels_charges = [f"{emoji} {charge}" for charge, (emoji, _) in charges.items()]
     valeurs_charges = [charges_mensuelles[charge] for charge in charges]
     
-    # Utilisation des couleurs de matplotlib au lieu de seaborn
-    colors2 = plt.cm.plasma(np.linspace(0, 1, len(labels_charges)))
+    # Filtrer les charges sans montants pour une meilleure lisibilité
+    filtered_labels_charges = []
+    filtered_values_charges = []
+    for label, value in zip(labels_charges, valeurs_charges):
+        if value > 0:
+            filtered_labels_charges.append(label)
+            filtered_values_charges.append(value)
     
-    ax2.pie(valeurs_charges, labels=labels_charges, autopct='%1.1f%%', startangle=90, colors=colors2)
-    ax2.axis('equal')
-    plt.title('Répartition des charges fixes mensuelles')
-    
-    st.pyplot(fig2)
+    if sum(filtered_values_charges) > 0:
+        ax2.pie(filtered_values_charges, labels=filtered_labels_charges, autopct='%1.1f%%', startangle=90)
+        ax2.axis('equal')
+        plt.title('Répartition des charges fixes mensuelles')
+        st.pyplot(fig2)
+    else:
+        st.warning("Aucune charge fixe à afficher. Veuillez définir des charges avec des montants.")
 
 # Analyse de rentabilité
 st.markdown('<p class="sub-header">📈 Analyse de rentabilité</p>', unsafe_allow_html=True)
 
-col1, col2 = st.columns(2)
+# Calcul du point mort (seuil de rentabilité)
+if revenu_brut > 0:
+    seuil_rentabilite = cout_fixe / (1 - (cout_variable / revenu_brut))
+    st.markdown(f"🎯 **Seuil de rentabilité mensuel:** {seuil_rentabilite:.2f} Dh")
+    st.markdown(f"📈 **Marge sur coût variable:** {(1 - (cout_variable / revenu_brut)) * 100:.2f}%")
 
-with col1:
-    # Marge par produit en graphique à barres horizontales
-    fig3, ax3 = plt.subplots(figsize=(10, 6))
+# Calcul du ROI
+if total_investissement > 0:
+    roi_mensuel = profit_net / total_investissement * 100
+    roi_annuel = roi_mensuel * 12
+    temps_retour = total_investissement / profit_net if profit_net > 0 else float('inf')
     
-    produits_liste = list(produits.keys())
-    marges = [marges_produits[p] for p in produits_liste]
+    st.markdown(f"💰 **ROI mensuel:** {roi_mensuel:.2f}%")
+    st.markdown(f"📆 **ROI annuel:** {roi_annuel:.2f}%")
     
-    # Trier par marge décroissante
-    sorted_indices = np.argsort(marges)
-    sorted_produits = [produits_liste[i] for i in sorted_indices]
-    sorted_marges = [marges[i] for i in sorted_indices]
-    sorted_emojis = [produits[p] for p in sorted_produits]
-    
-    # Couleurs basées sur les valeurs
-    colors3 = plt.cm.RdYlGn(np.linspace(0, 1, len(sorted_produits)))
-    
-    bars = ax3.barh([f"{emoji} {p}" for p, emoji in zip(sorted_produits, sorted_emojis)], sorted_marges, color=colors3)
-    
-    # Ajouter les valeurs à la fin des barres
-    for i, bar in enumerate(bars):
-        width = bar.get_width()
-        label_x_pos = width + 20
-        ax3.text(label_x_pos, bar.get_y() + bar.get_height()/2, f'{width:.2f} €',
-                ha='left', va='center')
-    
-    plt.xlabel('Marge mensuelle (€)')
-    plt.title('Marge mensuelle par produit')
-    ax3.spines['top'].set_visible(False)
-    ax3.spines['right'].set_visible(False)
-    
-    st.pyplot(fig3)
-
-with col2:
-    # Indicateurs clés de performance
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("#### 🔑 Indicateurs clés de performance")
-    
-    # Calculer quelques KPIs
-    marge_brute_pct = (revenu_brut - cout_variable) / revenu_brut * 100 if revenu_brut > 0 else 0
-    marge_nette_pct = profit_net / revenu_brut * 100 if revenu_brut > 0 else 0
-    ratio_cout_revenu = cout_total / revenu_brut * 100 if revenu_brut > 0 else 0
-    
-    col_a, col_b = st.columns(2)
-    
-    with col_a:
-        st.markdown("**Marge brute**")
-        st.markdown(f"<span class='metric-value'>{marge_brute_pct:.1f}%</span>", unsafe_allow_html=True)
-        
-        st.markdown("**Marge nette**")
-        st.markdown(f"<span class='metric-value'>{marge_nette_pct:.1f}%</span>", unsafe_allow_html=True)
-    
-    with col_b:
-        st.markdown("**Ratio coût/revenu**")
-        st.markdown(f"<span class='metric-value'>{ratio_cout_revenu:.1f}%</span>", unsafe_allow_html=True)
-        
-        st.markdown("**Seuil de rentabilité**")
-        # Calcul simplifié du seuil de rentabilité
-        seuil_rentabilite = cout_fixe / (marge_brute_pct/100) if marge_brute_pct > 0 else float('inf')
-        st.markdown(f"<span class='metric-value'>{seuil_rentabilite:.2f} €</span>", unsafe_allow_html=True)
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-    
-    # Analyse des produits rentables vs non rentables
-    st.markdown('<div class="card">', unsafe_allow_html=True)
-    st.markdown("#### 📊 Produits les plus rentables")
-    
-    # Calculer la rentabilité par produit (marge unitaire)
-    rentabilite_par_produit = {}
-    for produit in produits:
-        marge_unitaire = prix_vente[produit] - cout_unitaire[produit]
-        marge_pct = (marge_unitaire / prix_vente[produit]) * 100 if prix_vente[produit] > 0 else 0
-        rentabilite_par_produit[produit] = (marge_unitaire, marge_pct)
-    
-    # Trier par rentabilité
-    produits_tries = sorted(rentabilite_par_produit.items(), key=lambda x: x[1][1], reverse=True)
-    
-    # Afficher les 3 premiers
-    for i, (produit, (marge, pct)) in enumerate(produits_tries[:3]):
-        st.markdown(f"**{i+1}. {produits[produit]} {produit}**: Marge {marge:.2f}€ ({pct:.1f}%)")
-    
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# Pied de page
-st.markdown("---")
-st.markdown("### 💡 Recommandations")
-
-# Générer des recommandations basées sur l'analyse
-recommandations = []
-
-# Recommandation basée sur les marges
-produit_plus_rentable = max(rentabilite_par_produit.items(), key=lambda x: x[1][0])[0]
-produit_moins_rentable = min(rentabilite_par_produit.items(), key=lambda x: x[1][0])[0]
-
-recommandations.append(f"🔍 Augmenter la promotion du produit **{produit_plus_rentable}** qui a la meilleure marge unitaire.")
-recommandations.append(f"🔍 Revoir la formule ou le prix du produit **{produit_moins_rentable}** qui présente la plus faible marge.")
-
-# Recommandation basée sur le profit net
-if profit_net <= 0:
-    recommandations.append("⚠️ Le commerce n'est pas rentable actuellement. Examiner les possibilités de réduction des coûts fixes.")
-elif marge_nette_pct < 10:
-    recommandations.append("⚠️ La marge nette est inférieure à 10%. Envisager d'augmenter les prix ou de réduire les coûts.")
+    if profit_net > 0:
+        st.markdown(f"⏱️ **Temps de retour sur investissement:** {temps_retour:.1f} mois ({temps_retour/12:.1f} ans)")
+    else:
+        st.markdown("⚠️ **Le profit net est négatif ou nul, impossible de calculer le temps de retour sur investissement.**")
 else:
-    recommandations.append("✅ Le commerce présente une bonne rentabilité. Envisager des investissements pour développer l'activité.")
+    st.warning("Veuillez définir des charges d'investissement pour calculer le ROI.")
 
-# Afficher les recommandations
-for rec in recommandations:
-    st.markdown(f"- {rec}")
+# Affichage d'un rapport final et des recommandations
+st.markdown('<p class="sub-header">🔍 Rapport final et recommandations</p>', unsafe_allow_html=True)
 
-st.markdown("---")
-st.markdown("*Cette simulation est fournie à titre indicatif. Les résultats réels peuvent varier en fonction de nombreux facteurs.*")
+st.markdown('<div class="card">', unsafe_allow_html=True)
+if profit_net > 0:
+    st.markdown("✅ **Votre projet est rentable!**")
+    
+    # Calcul des produits les plus rentables
+    marges_produits_list = [(p, marges_produits[p]) for p in produits]
+    marges_produits_list.sort(key=lambda x: x[1], reverse=True)
+    
+    st.markdown("### 🏆 Produits les plus rentables:")
+    for i, (produit, marge) in enumerate(marges_produits_list[:3]):
+        if marge > 0:
+            st.markdown(f"{i+1}. **{produits[produit]} {produit}** - Marge mensuelle: {marge:.2f} Dh")
+    
+    st.markdown("### 💡 Recommandations:")
+    st.markdown("- Considérez d'augmenter les volumes de vente des produits les plus rentables")
+    st.markdown("- Envisagez une expansion progressive après la période de retour sur investissement")
+    st.markdown("- Surveillez régulièrement les coûts variables pour maintenir votre marge bénéficiaire")
+else:
+    st.markdown("⚠️ **Votre projet n'est pas rentable dans sa configuration actuelle.**")
+    st.markdown("### 💡 Recommandations:")
+    st.markdown("- Augmentez les prix de vente ou le volume des ventes")
+    st.markdown("- Réduisez les coûts fixes ou les coûts variables")
+    st.markdown("- Concentrez-vous sur les produits à plus forte marge")
+    st.markdown("- Réévaluez les investissements initiaux")
+st.markdown('</div>', unsafe_allow_html=True)
