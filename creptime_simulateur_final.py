@@ -86,7 +86,7 @@ for produit, emoji in produits.items():
                 25.0 if "Pancakes" in produit else (
                 14.0 if "Glaces" in produit else (
                 25.0 if "Salades" in produit else (
-                18.0 if "Jus" in produit else 3.0
+                18.0 if "Jus" in produit else 14
                 ))))),
             step=0.5,
             format="%.2f",
@@ -102,7 +102,7 @@ for produit, emoji in produits.items():
                 7.0 if "Pancakes" in produit else (
                 4.0 if "Glaces" in produit else (
                 14.0 if "Salades" in produit else (
-                8.0 if "Jus" in produit else 0.8
+                8.0 if "Jus" in produit else 5.0
                 ))))),
             step=0.1,
             format="%.2f",
