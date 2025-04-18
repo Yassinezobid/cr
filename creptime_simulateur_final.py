@@ -97,12 +97,12 @@ for produit, emoji in produits.items():
         prix_vente[produit] = st.number_input(
             f"Prix de vente (€)",
             min_value=0.0,
-            value=30.0 if "Crêpes" in produit else ( 
+            value=30.0 if "Crêpes" in produit else (
                 25.0 if "Gaufres" in produit else (
                 25.0 if "Pancakes" in produit else (
                 14.0 if "Glaces" in produit else (
                 25.0 if "Salades" in produit else (
-                18.0 if "Jus" in produit else 3.0 
+                18.0 if "Jus" in produit else 3.0
                 ))))),
             step=0.5,
             format="%.2f",
@@ -113,12 +113,12 @@ for produit, emoji in produits.items():
         cout_unitaire[produit] = st.number_input(
             f"Coût unitaire (€)",
             min_value=0.0,
-            value=8 if "Crêpes" in produit else (
-                8 if "Gaufres" in produit else (
-                7 if "Pancakes" in produit else (
-                4 if "Glaces" in produit else (
-                14 if "Salades" in produit else (
-                8 if "Jus" in produit else 0.8
+            value=8.0 if "Crêpes" in produit else (
+                8.0 if "Gaufres" in produit else (
+                7.0 if "Pancakes" in produit else (
+                4.0 if "Glaces" in produit else (
+                14.0 if "Salades" in produit else (
+                8.0 if "Jus" in produit else 0.8
                 ))))),
             step=0.1,
             format="%.2f",
@@ -128,12 +128,12 @@ for produit, emoji in produits.items():
     commandes_jour[produit] = st.sidebar.number_input(
         f"Commandes par jour",
         min_value=0,
-        value=25 if "Crêpes" in produit else (
-            15 if "Gaufres" in produit else (
-            12 if "Pancakes" in produit else (
-            20 if "Glaces" in produit else (
-            10 if "Salades" in produit else (
-            10 if "Jus" in produit else 40
+        value=int(25) if "Crêpes" in produit else (
+            int(15) if "Gaufres" in produit else (
+            int(12) if "Pancakes" in produit else (
+            int(20) if "Glaces" in produit else (
+            int(10) if "Salades" in produit else (
+            int(10) if "Jus" in produit else int(40)
             ))))),
         step=1,
         key=f"commandes_{produit}"
@@ -241,10 +241,10 @@ with col1:
     
     # Tableau résumé des indicateurs financiers
     data_resume = {
-        "Indicateur": ["Revenu brut mensuel", "Coût variable (produits)", "Coût fixe (charges)", 
-                     "Coût total mensuel", "Bénéfice avant impôt", f"Impôt ({taux_impot}%)", 
+        "Indicateur": ["Revenu brut mensuel", "Coût variable (produits)", "Coût fixe (charges)",
+                     "Coût total mensuel", "Bénéfice avant impôt", f"Impôt ({taux_impot}%)",
                      "Profit net mensuel", f"Profit par associé ({nb_associes})"],
-        "Montant (€)": [revenu_brut, cout_variable, cout_fixe, cout_total, 
+        "Montant (€)": [revenu_brut, cout_variable, cout_fixe, cout_total,
                       benefice_brut, impot, profit_net, profit_par_associe]
     }
     
@@ -277,7 +277,7 @@ with col1:
     df_produits = pd.DataFrame(data_produits)
     
     # Formater les valeurs monétaires
-    colonnes_monetaires = ["Prix unitaire (€)", "Coût unitaire (€)", "Marge unitaire (€)", 
+    colonnes_monetaires = ["Prix unitaire (€)", "Coût unitaire (€)", "Marge unitaire (€)",
                           "Revenu mensuel (€)", "Coût mensuel (€)", "Marge mensuelle (€)"]
     for col in colonnes_monetaires:
         df_produits[col] = df_produits[col].apply(lambda x: f"{x:.2f} €")
