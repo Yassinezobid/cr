@@ -198,6 +198,7 @@ def calculer_indicateurs():
     impot = benefice_brut * (st.session_state.taux_impot / 100) if benefice_brut > 0 else 0
     profit_net = benefice_brut - impot
     profit_par_associe = profit_net / st.session_state.nb_associes if st.session_state.nb_associes > 0 else 0
+    marge_nette = (profit_net / revenu_brut * 100) if revenu_brut > 0 else 0
     
     # Total des investissements
     total_investissement = sum(st.session_state.charges_investissement.values())
@@ -237,7 +238,8 @@ def calculer_indicateurs():
         'marge_cout_variable': marge_cout_variable,
         'roi_mensuel': roi_mensuel,
         'roi_annuel': roi_annuel,
-        'temps_retour': temps_retour
+        'temps_retour': temps_retour,
+        'marge_nette': marge_nette
     }
 
 # Calculer les indicateurs financiers
@@ -246,7 +248,7 @@ indicateurs = calculer_indicateurs()
 # Contenu principal
 # 1. Affichage du résumé financier
 st.markdown("## 💰 Résumé financier")
-col_profit1, col_profit2, col_profit3 = st.columns(3)
+col_profit1, col_profit2, col_profit3, col_profit4 = st.columns(4)
 with col_profit1:
     st.metric(label="Profit Net Total", value=f"{indicateurs['profit_net']:.2f} Dh",
             delta=f"{indicateurs['profit_net']:.1f} Dh" if indicateurs['profit_net'] > 0 else f"-{abs(indicateurs['profit_net']):.1f} Dh")
@@ -254,6 +256,8 @@ with col_profit2:
     st.metric(label="Par Associé", value=f"{indicateurs['profit_par_associe']:.2f} Dh")
 with col_profit3:
     st.metric(label="ROI annuel", value=f"{indicateurs['roi_annuel']:.2f}%")
+with col_profit4:
+    st.metric(label="Marge nette (%)", value=f"{indicateurs['marge_nette']:.2f}%")
 
 # 2. Paramètres d'activité généraux (dans un formulaire éditable)
 st.markdown('<p class="sub-header">📆 Paramètres d\'activité</p>', unsafe_allow_html=True)
