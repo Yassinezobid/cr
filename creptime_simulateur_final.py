@@ -114,9 +114,9 @@ if 'prix_vente' not in st.session_state:
     }
     
     # Initialisation des paramètres d'activité
-    st.session_state.jours_activite = 26
+    st.session_state.jours_activite = 30
     st.session_state.taux_impot = 20.0
-    st.session_state.nb_associes = 2
+    st.session_state.nb_associes = 6
     
     # Initialisation des charges mensuelles
     st.session_state.charges_mensuelles = {
