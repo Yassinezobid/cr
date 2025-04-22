@@ -120,13 +120,13 @@ if 'prix_vente' not in st.session_state:
     
     # Initialisation des charges mensuelles
     st.session_state.charges_mensuelles = {
-        "Loyer": 1200.0,
-        "Salaires": 3500.0,
-        "Électricité": 300.0,
-        "Ménage": 200.0,
-        "Publicité": 150.0,
-        "Internet": 60.0,
-        "Divers": 200.0
+        "Loyer": 7000.0,
+        "Salaires": 6000.0,
+        "Électricité": 3000.0,
+        "Ménage": 500.0,
+        "Publicité": 2000.0,
+        "Internet": 400.0,
+        "Divers": 1000.0
     }
     
     # Initialisation des charges d'investissement
